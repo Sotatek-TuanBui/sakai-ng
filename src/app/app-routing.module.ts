@@ -28,11 +28,14 @@ import { LoginComponent } from './components/login/login.component';
 import { ErrorComponent } from './components/error/error.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { AccessComponent } from './components/access/access.component';
+import { AuthGuard } from './services/auth-guard.service';
+import { RoleComponent } from './components/role/role.component';
 @NgModule({
     imports: [
         RouterModule.forRoot([
             {
-                path: '', component: AppMainComponent,
+                path: 'admin', component: AppMainComponent,
+                canActivate: [AuthGuard],
                 children: [
                     {path: '', component: DashboardComponent},
                     {path: 'uikit/formlayout', component: FormLayoutComponent},
@@ -56,11 +59,16 @@ import { AccessComponent } from './components/access/access.component';
                     {path: 'pages/empty', component: EmptyComponent},
                     {path: 'icons', component: IconsComponent},
                     {path: 'blocks', component: BlocksComponent},
-                    {path: 'documentation', component: DocumentationComponent}
+                    {path: 'documentation', component: DocumentationComponent},
+                    {path: 'auth/role', component: RoleComponent}
                 ],
             },
-            {path:'pages/landing', component: LandingComponent},
-            {path:'pages/login', component: LoginComponent},
+            {path: '', redirectTo: '/landing', pathMatch: 'full'},
+            {path:'landing', component: LandingComponent},
+            {
+                path:'admin/login',
+                component: LoginComponent,
+            },
             {path:'pages/error', component: ErrorComponent},
             {path:'pages/notfound', component: NotfoundComponent},
             {path:'pages/access', component: AccessComponent},

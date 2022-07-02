@@ -2,6 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ConfigService } from '../../service/app.config.service';
 import { AppConfig } from '../../api/appconfig';
 import { Subscription } from 'rxjs';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService } from 'src/app/services/auth.service';
+import { AlertService } from 'src/app/services/alert.service';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -27,25 +31,56 @@ import { Subscription } from 'rxjs';
 export class LoginComponent implements OnInit, OnDestroy {
 
   valCheck: string[] = ['remember'];
-
+  loginData = {
+    username: '',
+    password: '',
+    remember: false
+  }
   password: string;
-  
+
   config: AppConfig;
-  
+
   subscription: Subscription;
 
-  constructor(public configService: ConfigService){ }
+  loginForm: FormGroup;
 
-  ngOnInit(): void {
-    this.config = this.configService.config;
-    this.subscription = this.configService.configUpdate$.subscribe(config => {
-      this.config = config;
-    });
-  }
+  constructor(
+    public configService: ConfigService,
+    public fb: FormBuilder,
+    private authService: AuthService,
+    private alertService: AlertService,
+    private router: Router
+  ){ }
 
-  ngOnDestroy(): void {
-    if(this.subscription){
-      this.subscription.unsubscribe();
+    ngOnInit(): void {
+        this.config = this.configService.config;
+        this.subscription = this.configService.configUpdate$.subscribe(config => {
+        this.config = config;
+        });
+
+        this.loginForm = this.fb.group({
+            username: ['', [Validators.required]],
+            password: ['', [Validators.required]],
+            remember: ['', [Validators.required]]
+        });
     }
-  }
+
+    onSubmit(): void {
+        if (this.loginForm.valid) {
+            const data = this.loginForm.value;
+            this.authService.login(data).subscribe(res => {
+                localStorage.setItem('accessToken', res.data.access_token);
+                this.router.navigate(['/admin']);
+            },
+            err => {
+                this.alertService.error(err);
+            })
+        }
+    }
+
+    ngOnDestroy(): void {
+        if(this.subscription){
+        this.subscription.unsubscribe();
+        }
+    }
 }
